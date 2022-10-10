@@ -1,0 +1,12 @@
+{
+  "name": "trads",
+  "version": "1.0.0",
+  "description": "Translations CLI",
+  "main": "src/index.js",
+  "type": "module",
+  "author": "JoaoMoraess",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.1.2"
+  }
+}
