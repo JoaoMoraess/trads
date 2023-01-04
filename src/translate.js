@@ -8,9 +8,9 @@ const requestTranslation = async (url, encodedText, lang) => {
 }
 
 const getTranlation = (tranlationObject) => {
-    if(tranlationObject.translations) {
-        if(tranlationObject.translations.pronoun) return Object.keys(tranlationObject.translations.pronoun)[0];
-        if(tranlationObject.translations.verb) return Object.keys(tranlationObject.translations.verb)[0];
+    if (tranlationObject.translations) {
+        if (tranlationObject.translations.pronoun) return Object.keys(tranlationObject.translations.pronoun)[0];
+        if (tranlationObject.translations.verb) return Object.keys(tranlationObject.translations.verb)[0];
 
         return Object.keys(tranlationObject.translations)[0];
     }
@@ -40,7 +40,7 @@ const getLastIndexFromFile = (filePath) => {
     const translationObject = (buffer.length > 0) ? JSON.parse(buffer) : {};
 
     const tranlationKeys = Object.keys(translationObject);
-    if(tranlationKeys.length < 1) return -1;
+    if (tranlationKeys.length < 1) return -1;
 
     const lastIndex = tranlationKeys[tranlationKeys.length - 1];
 
@@ -50,23 +50,28 @@ const getLastIndexFromFile = (filePath) => {
 const addTranlationToFile = (filePath, text, actualIndex) => {
     const buffer = fs.readFileSync(filePath);
 
-    const registredtranslations = (buffer.length > 0) ? JSON.parse(buffer) : {};
-    const newTranlation = { ...registredtranslations, [actualIndex]: text };
+    const registredtranslations = (buffer.length > 0) ? buffer.toString() : "{\n}";
 
-    fs.writeFileSync(filePath, JSON.stringify(newTranlation, null, 4));
+    const indexOfLastBrace = registredtranslations.lastIndexOf('}')
+    const removedLastBrace = registredtranslations.substring(0, indexOfLastBrace - 1)
+    const newTranlation = `${removedLastBrace}\n  ,"${actualIndex}": "${text}"\n`;
+
+    const withBraces = `${newTranlation}}\n`
+
+    fs.writeFileSync(filePath, withBraces);
 }
 
 const addtranslationsToFiles = (tranlation, translationsPath, lastIndex) => {
     const translationFiles = {
-        pt: 'pt.json',
-        en: 'en.json',
-        es: 'es.json'
+        pt: 'PT.json',
+        en: 'EN.json',
+        es: 'ES.json'
     };
 
     const actualIndex = lastIndex ?
         Number(lastIndex) + 1 :
-        getLastIndexFromFile(translationsPath + '/pt.json') + 1;
-    
+        getLastIndexFromFile(translationsPath + '/PT.json') + 1;
+
     Object.keys(translationFiles).forEach(lang => {
         const filePath = `/${translationFiles[lang]}`;
         addTranlationToFile(translationsPath + filePath, tranlation[lang], actualIndex);
@@ -79,7 +84,7 @@ const getArgs = (arg) => {
     const processArgs = process.argv.slice(2);
     const argIndex = processArgs.indexOf(arg);
 
-    if(argIndex === -1) return;
+    if (argIndex === -1) return;
 
     return processArgs[argIndex + 1];
 }
@@ -98,14 +103,14 @@ async function main() {
 
     const helpCommand = getArgFlag('-h');
 
-    if(helpCommand) {
+    if (helpCommand) {
         console.log('-t "mensagem a ser traduzida" (obrigatorio)');
         console.log('-p "caminho para a pasta onde contem arquivos de tradução ex: src/translations" (opcional)');
         console.log('-l "passa como parametro o ultimo índice para incrementar nas traduções" (opcional)');
         return
     }
 
-    if(!text && !helpCommand) {
+    if (!text && !helpCommand) {
         console.error('Parametros invalidos');
         console.error('Use -h para ver comandos');
         return
@@ -113,12 +118,12 @@ async function main() {
 
     const translation = await simplyTranslateApi(text);
     console.table(translation);
-    
-    if(tFilesPath) {
+
+    if (tFilesPath) {
         const translationsPath = path.resolve(tFilesPath);
         const actualIndex = addtranslationsToFiles(translation, translationsPath, lastIndex);
 
-        console.log(`Actual last index: ${actualIndex}`);
+        console.log(`Last Index: ${actualIndex}`);
     }
 }
 
